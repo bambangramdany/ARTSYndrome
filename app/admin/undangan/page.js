@@ -36,7 +36,7 @@ export default async function AdminInvites({ searchParams }) {
       <div className="admin-head">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <p className="eyebrow" style={{ fontSize: 12 }}>Undangan pembukaan</p>
-          <h1 className="h2" style={{ fontSize: 44, fontWeight: 800 }}>{ex.title}</h1>
+          <h1 className="h2 admin-title">{ex.title}</h1>
           <p className="lead" style={{ fontSize: 15 }}>{[ex.opening_label, ex.venue, ex.rsvp_deadline_label ? 'Batas RSVP ' + ex.rsvp_deadline_label : null].filter(Boolean).join(' · ')}</p>
         </div>
       </div>
@@ -48,13 +48,13 @@ export default async function AdminInvites({ searchParams }) {
         {stats.map(([label, n]) => <div key={label}><span>{label}</span><strong>{n}</strong></div>)}
       </div>
 
-      <div className="toolbar" role="tablist" aria-label="Kategori undangan">
+      <div className="toolbar pills-scroll" role="tablist" aria-label="Kategori undangan">
         {TABS.map((t) => (
           <Link key={t} role="tab" className="pill" aria-selected={t === tab} aria-current={t === tab ? 'true' : undefined} href={t === 'Semua' ? '/admin/undangan' : '/admin/undangan?k=' + t}>{t}</Link>
         ))}
       </div>
 
-      <div className="tablebox">
+      <div className="tablebox cards">
         <table style={{ minWidth: 1240 }}>
           <thead>
             <tr><th>Nama</th><th>Kategori</th><th>Instansi / media</th><th>Kontak</th><th>Undangan</th><th>RSVP</th><th>Check-in</th><th>Aksi</th></tr>
@@ -73,17 +73,19 @@ export default async function AdminInvites({ searchParams }) {
                 : [];
               return (
                 <tr key={i.id}>
-                  <td style={{ fontWeight: 600 }}>{i.name}<br /><span className="mono" style={{ color: '#555', fontWeight: 400 }}>{i.code}</span></td>
-                  <td><span className={i.category === 'VIP' ? 't-accent' : i.category === 'Media' ? 't-solid' : 't-line'}>{i.category}</span></td>
-                  <td>{i.organization || '—'}</td>
-                  <td style={{ fontSize: 14 }}>{i.whatsapp ? <span className="mono">{displayPhone(i.whatsapp)}</span> : null}{i.whatsapp && i.email ? <br /> : null}{i.email || (!i.whatsapp ? '—' : null)}</td>
-                  <td style={{ fontSize: 14 }}>{inv}{i.sent_at ? <><br /><span className="mono" style={{ color: '#555' }}>{fmtTime(i.opened_at || i.sent_at)}</span></> : null}</td>
-                  <td>
-                    <span className={i.rsvp === 'yes' ? 't-solid' : 't-line'}>{RSVP[i.rsvp] || 'Belum jawab'}</span>
-                    {extra.length ? <div style={{ fontSize: 13, color: '#444', marginTop: 6, lineHeight: 1.5 }}>{extra.join(' · ')}</div> : null}
+                  <td className="c-title" style={{ fontWeight: 600 }}>{i.name}<br /><span className="mono" style={{ color: '#555', fontWeight: 400 }}>{i.code}</span></td>
+                  <td data-label="Kategori"><span className={i.category === 'VIP' ? 't-accent' : i.category === 'Media' ? 't-solid' : 't-line'}>{i.category}</span></td>
+                  <td data-label="Instansi">{i.organization || '—'}</td>
+                  <td data-label="Kontak" style={{ fontSize: 14 }}><div>{i.whatsapp ? <span className="mono">{displayPhone(i.whatsapp)}</span> : null}{i.whatsapp && i.email ? <br /> : null}{i.email || (!i.whatsapp ? '—' : null)}</div></td>
+                  <td data-label="Undangan" style={{ fontSize: 14 }}><div>{inv}{i.sent_at ? <><br /><span className="mono" style={{ color: '#555' }}>{fmtTime(i.opened_at || i.sent_at)}</span></> : null}</div></td>
+                  <td data-label="RSVP">
+                    <div>
+                      <span className={i.rsvp === 'yes' ? 't-solid' : 't-line'}>{RSVP[i.rsvp] || 'Belum jawab'}</span>
+                      {extra.length ? <div style={{ fontSize: 13, color: '#444', marginTop: 6, lineHeight: 1.5 }}>{extra.join(' · ')}</div> : null}
+                    </div>
                   </td>
-                  <td className="mono" style={{ color: '#444' }}>{i.checked_in_at ? fmtTime(i.checked_in_at) : '—'}</td>
-                  <td><InviteActions id={i.id} link={link} waUrl={waUrl} mailUrl={mailUrl} name={i.name} /></td>
+                  <td data-label="Check-in" className="mono" style={{ color: '#444' }}>{i.checked_in_at ? fmtTime(i.checked_in_at) : '—'}</td>
+                  <td className="c-actions"><InviteActions id={i.id} link={link} waUrl={waUrl} mailUrl={mailUrl} name={i.name} /></td>
                 </tr>
               );
             })}
