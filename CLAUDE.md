@@ -14,10 +14,18 @@ Domain: **artsyndrome.id** (sudah dibeli). Hosting: Vercel (repo ini, cabang `ma
 
 Desain referensi (6 artboard + catatan) ada di canvas Claude Design "ARTSYndrome Website": https://claude.ai/code/artifact/038d6939-79b4-448a-8902-ed90236036f3
 
-## Status per 12 Nov 2026
-- Kode tahap 1 selesai, lolos `next build`, diuji end-to-end dengan Postgres + PostgREST lokal (buku tamu, validasi, dedup WA, RSVP, check-in tanpa dobel, admin auth, CSV, ICS, tampilan desktop & ponsel).
-- **Belum:** project Supabase dibuat, deploy Vercel, DNS artsyndrome.id, isi data pameran di tabel `exhibitions` (alamat, jam pembukaan, PIC, Instagram, foto karya), uji di produksi.
-- Target: siap dan diuji tim paling lambat **Sabtu 14 Nov 2026**.
+## Status per 12 Nov 2026 (sore)
+- **Live di https://artsyndrome.id** (Vercel project `artsy-ndrome`, team `bamramdany-2285s-projects`). `www` → 308 ke apex.
+- Supabase project **ARTSYndrome**, ref `oubtnzenigmbgdpinewo` (org "bambangramdany's WTM"). Schema sudah jalan; baris `si-pemikir` sudah lengkap (alamat, jam, RSVP, PIC, Instagram, kontak privasi, `poster_url = /poster-si-pemikir.jpg`).
+- Uji produksi README bagian 4 bagian A–C lolos (buku tamu, admin, CSV, undangan → RSVP → QR → check-in).
+- **Masih manual oleh tim:** hapus data uji, cetak poster `/admin/qr`, siapkan tablet meja tamu.
+- Jam: pembukaan 16.00 WIB untuk VIP & media (yang tampil di website), 18.00 WIB untuk umum (di poster). Disengaja, jangan "diseragamkan" tanpa tanya.
+
+## Catatan deploy (pelajaran 12 Nov)
+- Env Vercel: isian manual `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (secret key `sb_secret_…`). Integrasi Supabase–Vercel juga terpasang dan menambah `NEXT_PUBLIC_SUPABASE_URL`/`SUPABASE_SECRET_KEY` dkk. `lib/db.js` mengambil URL+kunci **berpasangan**: manual dulu, lalu integrasi; log server mencatat sumber + host (`[db] Supabase via …`).
+- Semua query Supabase wajib `fetch` **no-store** (`lib/db.js`). Tanpa itu Data Cache Vercel menyimpan hasil pertama lintas deploy → data pameran/tamu tidak pernah berubah.
+- DNS di Rumahweb: edit lewat **cPanel → Zone Editor** (Manajemen DNS my.rumahweb.com tidak aktif untuk domain ini, jangan klik DAFTAR). Jaringan kantor membelokkan query DNS UDP ke cache ISP; untuk cek DNS pakai DNS-over-HTTPS (`dns.google/resolve`) atau `dig +tcp`.
+- Alamat deployment `*-xxxx-bamramdany-2285s-projects.vercel.app` terkunci ke versi kodenya; untuk uji selalu pakai `artsyndrome.id`.
 
 ## Stack & struktur
 - Next.js 14.2.35 (App Router, JavaScript, tanpa TypeScript), React 18, @supabase/supabase-js, qrcode.
