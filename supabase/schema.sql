@@ -75,6 +75,11 @@ alter table exhibitions enable row level security;
 alter table invitations enable row level security;
 alter table guests enable row level security;
 
+-- Izin eksplisit untuk server website. Perlu bila project dibuat tanpa
+-- "otomatis buka tabel baru ke Data API"; aman dijalankan ulang.
+grant usage on schema public to service_role;
+grant select, insert, update, delete on exhibitions, invitations, guests to service_role;
+
 -- Pameran pertama. Ganti nilai dalam [KURUNG] lewat Table Editor kapan saja.
 insert into exhibitions (slug, title, artist, venue, address, opening_label, starts_on, ends_on, rsvp_deadline_label, contact_label)
 values ('si-pemikir', 'Si Pemikir', 'Franki Indrasmoro', 'Galeri TOKONOMA', '[ALAMAT GALERI]',
