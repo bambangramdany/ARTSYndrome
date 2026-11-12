@@ -60,7 +60,7 @@ export default function InviteView({ invite, event, qrSvg }) {
         <h1 className="display" style={{ fontSize: 60 }}>{event.title}</h1>
         {event.posterUrl ? (
           <figure style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <img src={event.posterUrl} alt={event.posterCaption || `Karya ${event.artist}`} style={{ width: '100%', display: 'block' }} />
+            <img src={event.posterUrl} alt={event.posterCaption || `${event.title} · ${event.artist}`} style={{ width: '100%', display: 'block' }} />
             {event.posterCaption ? <figcaption className="small" style={{ color: '#444' }}>{event.posterCaption}</figcaption> : null}
           </figure>
         ) : null}

@@ -7,6 +7,14 @@ export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   const ex = await currentExhibition();
+  // Poster tampil di kolom info saat layar lebar, dan di bawah form saat layar sempit
+  // (ponsel/tablet tegak), supaya tamu walk-in langsung melihat form buku tamu.
+  const poster = (cls) => ex.poster_url ? (
+    <figure className={cls} style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <img src={ex.poster_url} alt={ex.poster_caption || `${ex.title} · ${ex.artist}`} loading="lazy" style={{ width: '100%', height: 'auto', display: 'block' }} />
+      {ex.poster_caption ? <figcaption className="small" style={{ color: '#444' }}>{ex.poster_caption}</figcaption> : null}
+    </figure>
+  ) : null;
   return (
     <PublicShell exhibition={ex}>
       <div className="wrap split">
@@ -16,12 +24,7 @@ export default async function Home() {
             <h1 id="judul-pameran" className="display">{ex.title}</h1>
             <p className="artist">{ex.artist}</p>
           </div>
-          {ex.poster_url ? (
-            <figure style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <img src={ex.poster_url} alt={ex.poster_caption || `Karya ${ex.artist}`} style={{ width: '100%', display: 'block' }} />
-              {ex.poster_caption ? <figcaption className="small" style={{ color: '#444' }}>{ex.poster_caption}</figcaption> : null}
-            </figure>
-          ) : null}
+          {poster('poster-wide')}
           <dl className="meta">
             <div><dt>Tempat</dt><dd>{ex.venue}</dd></div>
             <div><dt>Kolaborasi</dt><dd>ARTSYndrome × {ex.artist}</dd></div>
@@ -35,6 +38,7 @@ export default async function Home() {
         <section className="side" aria-label="Buku tamu">
           <GuestForm instagram={ex.instagram} privacyContact={ex.privacy_contact} title={ex.title} />
         </section>
+        {poster('poster-narrow')}
       </div>
     </PublicShell>
   );
