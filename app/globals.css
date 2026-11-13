@@ -221,6 +221,15 @@ td { padding: 14px 16px; border-top: 1px solid var(--line); vertical-align: top;
 /* Buku tamu di ponsel: tamu sudah di galeri, form harus langsung terlihat */
 @media (max-width: 640px) { .guestbook .meta, .guestbook .gb-links { display: none; } .guestbook.split { gap: 24px; } }
 
+/* Siaran pers di halaman pameran */
+.release { padding-top: 8px; padding-bottom: 56px; }
+.release-body { max-width: 720px; border-top: 1px solid var(--ink); padding-top: 32px; display: flex; flex-direction: column; gap: 18px; }
+.release-title { font-size: clamp(26px, 3vw, 34px); }
+.release-meta { text-transform: uppercase; letter-spacing: .04em; margin-bottom: 8px; }
+.release-p { margin: 0; font-size: 18px; line-height: 1.75; color: #1a1a1a; }
+.release-p a { overflow-wrap: anywhere; }
+@media (max-width: 640px) { .release { padding-bottom: 40px; } .release-p { font-size: 17px; line-height: 1.7; } }
+
 /* Liputan media */
 .press-page { padding-top: 56px; padding-bottom: 80px; }
 .press-head { display: flex; flex-direction: column; gap: 12px; padding-bottom: 32px; border-bottom: 1px solid var(--ink); }

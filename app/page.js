@@ -11,7 +11,7 @@ export default async function Home() {
   const past = exhibitions.filter((e) => e.status === 'past');
 
   return (
-    <PublicShell>
+    <PublicShell active="/">
       <section className="wrap home-hero">
         <p className="eyebrow">Ruang temu seni visual</p>
         <h1 className="display home-title">ARTSYndrome</h1>

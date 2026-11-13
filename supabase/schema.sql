@@ -161,3 +161,31 @@ update exhibitions set
   artist_id = coalesce(artist_id, (select id from artists where slug = 'franki-indrasmoro')),
   description = coalesce(description, E'Si Pemikir menampilkan lebih dari 150 karya visual Franki Indrasmoro, dari gambar masa kecil hingga karya terbarunya. Judul pameran lahir ketika Franki mengumpulkan karya-karya lamanya dan menyadari bahwa dirinya seorang pemikir: suka memikirkan banyak hal secara kritis, sekaligus kreator yang membangun semesta dari fantasinya.\n\nPameran ini mengajak pengunjung ikut berpikir, menemukan dan mengembangkan potensi diri agar berguna bagi sesama dan alam. Pada hari penutupan, Franki memperdengarkan lagu-lagu dari album debutnya, Revisi Diri.')
 where slug = 'si-pemikir';
+
+-- ── Tahap 1c (13 Nov 2026): siaran pers lengkap di halaman pameran ──
+-- Paragraf dipisah baris kosong. Tampil di /pameran/[slug] di bawah poster.
+alter table exhibitions add column if not exists press_release_title text;
+alter table exhibitions add column if not exists press_release text;
+
+update exhibitions set
+  press_release_title = 'Sebuah pameran karya Franki Indrasmoro a.k.a Pepeng ex Naif bertajuk "Si Pemikir"',
+  press_release = $rilis$Lebih tiga dekade dan jauh sebelum Naif populer, Pepeng yang berkuliah Fakultas Seni Rupa & Desain (FSRD) di Institut Kesenian Jakarta ini sudah mengawali karirnya di industri visual. Dimulai sebagai ilustrator majalah HAI circa 1993 dan akhirnya sibuk di lingkar dunia agensi periklanan sebagai storyboard artist.
+
+Banyak karya sudah dia hasilkan, bahkan mundur jauh saat dia belum genap berumur 10 tahun. Karya yang terinspirasi dan merespon peristiwa budaya populer pada saat itu.
+
+Pamerannya dinamakan “Si Pemikir” sejak Franki menyadari bahwa dirinya ternyata adalah seorang pemikir; suka memikirkan banyak hal secara kritis dan seorang kreator, pemimpi yang suka berfantasi dan membangun semesta atas fantasinya tersebut.
+
+Semua ia temukan saat mengumpulkan karya-karya lamanya sejak kecil sampai ia dewasa.
+
+Pameran 150 lebih karya visual ini berusaha menangkap perjalanan Franki berkesenian selama hidupnya sejauh ini di usianya yang genap setengah abad di tahun 2026. Peristiwa bersanding-iringnya seni rupa dan seni bebunyian; bahwa terbukti manusia sebagai makhluk Tuhan menjalankan semua potensinya secara optimal selama ia bisa mengaturnya (waktu, fisik dan mental.)
+
+Si Pemikir ingin mengajak khalayak ramai, terutama para penikmat pameran karyanya, untuk "berpikir" menemukan dan mengembangkan potensi mereka agar menjadi manusia yang berguna bagi manusia lainnya, juga bagi alam. Dikaitkan dengan kondisi Indonesia saat ini, kita masing-masing perlu retrospeksi diri kita untuk menemukan guna kita bagi sesama warga.
+
+Pameran ini dibuka dengan penuh syukur dan suka cita, dan ditutup dengan pintu gerbang babak baru Franki Indrasmoro sebagai seniman musik memperdengarkan tiga belas lagu, yang akan dirilis dalam format album penuh di awal tahun 2027 berjudul “Revisi Diri”, memperlihatkan cover art album tersebut, sekaligus melakukan selebrasi atas perilisan single “Jangan Paksa Kuberhenti Khawatirkanmu” sebagai menu pembuka albumnya.
+
+Pameran ini terselenggara dalam kolaborasi dengan ARTSYndrome, sebuah inisiatif yang mempertemukan seniman visual dan penikmat seni, serta didukung oleh DCDC, wadah bagi para pecinta musik dan seni. Karya-karya komunitasnya bisa dilihat di dcdc.id.
+
+Selamat menikmati karya Franki :)
+
+@franki.indrasmoro · @tokonoma_jkt · @artsyndrome.id$rilis$
+where slug = 'si-pemikir';

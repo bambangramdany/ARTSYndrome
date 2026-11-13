@@ -7,6 +7,15 @@ import { fmtRange } from '../../../lib/util';
 
 export const dynamic = 'force-dynamic';
 
+// Jadikan @akun Instagram dan nama domain (contoh: dcdc.id) di teks rilis sebagai tautan.
+function linkify(text) {
+  return text.split(/(@[A-Za-z0-9._]*[A-Za-z0-9_]|\b[a-z0-9-]+\.(?:id|com|co\.id|org)\b)/g).map((part, i) => {
+    if (/^@[A-Za-z0-9._]+$/.test(part)) return <a key={i} href={`https://instagram.com/${part.slice(1)}`} target="_blank" rel="noopener noreferrer">{part}</a>;
+    if (/^[a-z0-9-]+\.(id|com|co\.id|org)$/.test(part)) return <a key={i} href={`https://${part}`} target="_blank" rel="noopener noreferrer">{part}</a>;
+    return part;
+  });
+}
+
 export async function generateMetadata({ params }) {
   const ex = await getExhibition(params.slug);
   if (!ex) return { title: 'Pameran · ARTSYndrome' };
@@ -46,6 +55,17 @@ export default async function Exhibition({ params }) {
           {ex.poster_url ? <img src={ex.poster_url} alt={`Poster ${ex.title}`} style={{ width: '100%', height: 'auto', display: 'block' }} /> : null}
         </section>
       </div>
+
+      {ex.press_release ? (
+        <section className="wrap release" aria-labelledby="h-rilis">
+          <article className="release-body">
+            <p className="eyebrow">Siaran pers</p>
+            <h2 id="h-rilis" className="h2 release-title">{ex.press_release_title || ex.title}</h2>
+            <p className="small mono release-meta">{[fmtRange(ex.starts_on, ex.ends_on), ex.venue].filter(Boolean).join(' · ')}</p>
+            {paragraphs(ex.press_release).map((p, i) => <p key={i} className="release-p">{linkify(p)}</p>)}
+          </article>
+        </section>
+      ) : null}
 
       {press.length ? (
         <section className="wrap home-block" aria-labelledby="h-liputan" style={{ paddingTop: 0 }}>
