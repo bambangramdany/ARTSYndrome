@@ -10,7 +10,8 @@ export const metadata = { title: 'QR buku tamu · ARTSYndrome', robots: { index:
 export default async function QrPoster() {
   requireAdmin('/admin/qr');
   const ex = await currentExhibition();
-  const url = siteUrl();
+  // Alamat pendek yang selalu mengarah ke buku tamu pameran aktif.
+  const url = siteUrl() + '/bukutamu';
   const svg = await QRCode.toString(url, { type: 'svg', margin: 0, errorCorrectionLevel: 'H', color: { dark: '#111111', light: '#FFFFFF' } });
 
   return (

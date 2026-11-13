@@ -1,6 +1,13 @@
 import Link from 'next/link';
 
-export function PublicShell({ children, exhibition }) {
+const PUBLIC_NAV = [
+  ['/pameran', 'Pameran'],
+  ['/seniman', 'Seniman'],
+  ['/liputan', 'Liputan'],
+  ['/undangan', 'Minta undangan']
+];
+
+export function PublicShell({ children, active }) {
   return (
     <div className="site">
       <header className="top">
@@ -8,16 +15,18 @@ export function PublicShell({ children, exhibition }) {
           <Link href="/" aria-label="ARTSYndrome, beranda">
             <img className="logo" src="/logo-black.svg" alt="ARTSYndrome" width="117" height="52" />
           </Link>
-          {exhibition ? (
-            <span className="eyebrow" style={{ fontSize: 12 }}>{exhibition.title} · {exhibition.venue}</span>
-          ) : null}
+          <nav aria-label="Navigasi utama" className="pubnav">
+            {PUBLIC_NAV.map(([href, label]) => (
+              <Link key={href} href={href} aria-current={active === href ? 'page' : undefined}>{label}</Link>
+            ))}
+          </nav>
         </div>
       </header>
       <main>{children}</main>
       <footer className="foot">
         <div className="wrap">
-          <span>ARTSYndrome · Ruang temu seni visual · <Link href="/liputan">Liputan media</Link></span>
-          <span>© 2026 ARTSYndrome</span>
+          <span>ARTSYndrome · Ruang temu seni visual</span>
+          <span><a href="https://instagram.com/artsyndrome.id" target="_blank" rel="noopener noreferrer">@artsyndrome.id</a> · © 2026</span>
         </div>
       </footer>
     </div>
@@ -29,6 +38,7 @@ export function AdminShell({ children, active }) {
     ['/admin', 'Tamu'],
     ['/admin/undangan', 'Undangan'],
     ['/admin/liputan', 'Liputan'],
+    ['/admin/permintaan', 'Permintaan'],
     ['/admin/qr', 'QR Buku Tamu']
   ];
   return (

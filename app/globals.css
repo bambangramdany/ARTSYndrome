@@ -159,6 +159,68 @@ td { padding: 14px 16px; border-top: 1px solid var(--line); vertical-align: top;
   .tablebox.cards tr:has(td.empty) { border: 0; padding: 0; }
 }
 
+/* Situs publik ARTSYndrome */
+.page-pad { padding-top: 56px; padding-bottom: 80px; }
+.page-head { display: flex; flex-direction: column; gap: 14px; padding-bottom: 32px; border-bottom: 1px solid var(--ink); }
+.page-title { font-size: clamp(48px, 7vw, 88px); }
+.home-hero { padding-top: 72px; padding-bottom: 56px; display: flex; flex-direction: column; gap: 20px; border-bottom: 1px solid var(--ink); }
+.home-title { font-size: clamp(40px, 12.5vw, 148px); overflow-wrap: anywhere; }
+.home-lead { margin: 0; font-size: clamp(18px, 2vw, 22px); line-height: 1.5; color: #222; max-width: 760px; }
+.home-block { padding-top: 56px; padding-bottom: 8px; }
+.block-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+.mono-link { font-family: var(--mono); font-size: 13px; text-transform: uppercase; letter-spacing: .06em; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; }
+.ex-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(520px, 100%), 1fr)); gap: 24px; }
+.ex-list-1 { grid-template-columns: 1fr; }
+.ex-card { border: 1px solid var(--ink); display: grid; grid-template-columns: minmax(0, 200px) minmax(0, 1fr); }
+.ex-card-img { display: block; background: var(--ink); border-right: 1px solid var(--ink); }
+.ex-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ex-card-body { padding: 24px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.ex-card-title { margin: 0; font-size: clamp(28px, 3vw, 40px); line-height: 1; font-weight: 800; letter-spacing: -.03em; }
+.ex-card-title a { text-decoration: none; }
+.ex-card-artist { margin: 0; font-size: 18px; font-weight: 500; }
+.ex-card-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+.ex-card:not(:has(.ex-card-img)) { grid-template-columns: 1fr; }
+@media (max-width: 560px) {
+  .ex-card { grid-template-columns: 1fr; }
+  .ex-card-img { border-right: 0; border-bottom: 1px solid var(--ink); aspect-ratio: 4 / 3; }
+  .ex-card-img img { object-position: top; }
+  .ex-card-body { padding: 20px; }
+  .ex-card-actions > a { flex: 1 1 auto; justify-content: center; }
+}
+.about-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 32px; margin-top: 24px; border-top: 1px solid var(--ink); padding-top: 24px; }
+.about-p { margin: 0; font-size: 17px; line-height: 1.65; color: #222; max-width: 680px; }
+.artist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 24px; }
+.artist-card { border: 1px solid var(--ink); }
+.artist-card-link { display: flex; flex-direction: column; gap: 16px; padding: 20px; text-decoration: none; color: var(--ink); height: 100%; }
+.artist-card-link:hover { color: var(--ink); }
+.artist-card-link:hover .artist-card-name { text-decoration: underline; }
+.artist-card-name { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -.02em; }
+.artist-photo { aspect-ratio: 1; background: var(--plate); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.artist-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.artist-photo span { font-size: 64px; font-weight: 800; letter-spacing: -.04em; color: var(--muted); }
+@media (max-width: 560px) {
+  .artist-card-link { flex-direction: row; align-items: flex-start; gap: 16px; padding: 16px; }
+  .artist-card-link .artist-photo { width: 88px; flex-shrink: 0; }
+  .artist-card-link .artist-photo span { font-size: 30px; }
+  .artist-card-name { font-size: 20px; }
+}
+.artist-profile { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 48px; align-items: start; }
+.artist-photo-lg span { font-size: 112px; }
+@media (max-width: 760px) { .artist-profile { grid-template-columns: 1fr; gap: 24px; } .artist-photo-lg { max-width: 240px; } .artist-photo-lg span { font-size: 72px; } }
+.cta-band { border: 1px solid var(--ink); background: var(--plate); padding: 32px; display: flex; flex-wrap: wrap; gap: 24px; align-items: center; justify-content: space-between; margin-bottom: 72px; }
+@media (max-width: 640px) {
+  .page-pad { padding-top: 28px; padding-bottom: 48px; }
+  .home-hero { padding-top: 36px; padding-bottom: 36px; }
+  .home-block { padding-top: 40px; }
+  .cta-band { padding: 24px 20px; margin-bottom: 48px; }
+  .cta-band .btn { width: 100%; }
+  .top nav.pubnav { gap: 4px 16px; }
+  .top nav.pubnav a { min-height: 40px; display: inline-flex; align-items: center; }
+}
+
+/* Buku tamu di ponsel: tamu sudah di galeri, form harus langsung terlihat */
+@media (max-width: 640px) { .guestbook .meta, .guestbook .gb-links { display: none; } .guestbook.split { gap: 24px; } }
+
 /* Liputan media */
 .press-page { padding-top: 56px; padding-bottom: 80px; }
 .press-head { display: flex; flex-direction: column; gap: 12px; padding-bottom: 32px; border-bottom: 1px solid var(--ink); }

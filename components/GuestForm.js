@@ -5,7 +5,7 @@ import { ROLES, SOURCES } from '../lib/util';
 
 const empty = { name: '', email: '', whatsapp: '', city: '', instagram: '', source: '', consent: false, website: '' };
 
-export default function GuestForm({ instagram, privacyContact, title }) {
+export default function GuestForm({ instagram, privacyContact, title, exhibitionSlug }) {
   const [f, setF] = useState(empty);
   const [roles, setRoles] = useState([]);
   const [status, setStatus] = useState('idle');
@@ -27,7 +27,7 @@ export default function GuestForm({ instagram, privacyContact, title }) {
       const res = await fetch('/api/guest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...f, roles })
+        body: JSON.stringify({ ...f, roles, exhibition: exhibitionSlug })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Gagal menyimpan.');

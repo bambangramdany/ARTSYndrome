@@ -104,3 +104,60 @@ create table if not exists press_links (
 create index if not exists press_links_exhibition_idx on press_links(exhibition_id);
 alter table press_links enable row level security;
 grant select, insert, update, delete on press_links to service_role;
+
+-- ── Tahap 1b (13 Nov 2026): ARTSYndrome sebagai wadah banyak seniman ──
+-- Seniman yang difasilitasi ARTSYndrome. Profil tampil di /seniman.
+create table if not exists artists (
+  id uuid primary key default gen_random_uuid(),
+  slug text unique not null,
+  name text not null,
+  alias text,                  -- nama panggung / julukan, contoh: 'Pepeng'
+  short_bio text,              -- 1–2 kalimat untuk kartu
+  bio text,                    -- profil lengkap; paragraf dipisah baris kosong
+  photo_url text,
+  instagram text,
+  website text,
+  sort_order int not null default 0,
+  published boolean not null default true,
+  created_at timestamptz not null default now()
+);
+alter table artists enable row level security;
+grant select, insert, update, delete on artists to service_role;
+
+-- Pameran terhubung ke seniman utamanya, punya deskripsi, dan bisa disembunyikan.
+alter table exhibitions add column if not exists artist_id uuid references artists(id) on delete set null;
+alter table exhibitions add column if not exists description text;
+alter table exhibitions add column if not exists published boolean not null default true;
+
+-- Permintaan undangan dari publik (/undangan). Tim menindaklanjuti di /admin/permintaan.
+create table if not exists invitation_requests (
+  id uuid primary key default gen_random_uuid(),
+  exhibition_id uuid references exhibitions(id) on delete set null,   -- null = semua pameran berikutnya
+  name text not null,
+  email text,
+  whatsapp text,               -- format 62xxxxxxxxxx
+  organization text,
+  roles text[],
+  note text,
+  consent boolean not null default false,
+  handled_at timestamptz,
+  created_at timestamptz not null default now()
+);
+create index if not exists invitation_requests_created_idx on invitation_requests(created_at desc);
+alter table invitation_requests enable row level security;
+grant select, insert, update, delete on invitation_requests to service_role;
+
+-- Data awal dari siaran pers "Si Pemikir". Bisa diubah lewat Table Editor kapan saja.
+insert into artists (slug, name, alias, short_bio, bio, instagram, sort_order)
+values (
+  'franki-indrasmoro', 'Franki Indrasmoro', 'Pepeng',
+  'Perupa dan musisi, dikenal sebagai Pepeng (eks Naif). Lulusan FSRD Institut Kesenian Jakarta yang mengawali karier sebagai ilustrator majalah HAI.',
+  E'Franki Indrasmoro, yang dikenal sebagai Pepeng (eks Naif), menempuh pendidikan di Fakultas Seni Rupa dan Desain Institut Kesenian Jakarta. Jauh sebelum Naif populer, ia sudah berkarya di industri visual: mulai sebagai ilustrator majalah HAI sekitar 1993, lalu lama berkiprah di dunia agensi periklanan sebagai storyboard artist.\n\nIa sudah menggambar sejak belum genap berumur sepuluh tahun, sering kali merespons peristiwa budaya populer di sekitarnya. Pada 2026, di usianya yang genap setengah abad, ia menggelar Si Pemikir, pameran lebih dari 150 karya visual yang merangkum perjalanan berkeseniannya.\n\nSelain seni rupa, Franki menyiapkan babak baru sebagai musisi lewat album penuh berjudul Revisi Diri, yang direncanakan rilis awal 2027.',
+  '@franki.indrasmoro', 1
+)
+on conflict (slug) do nothing;
+
+update exhibitions set
+  artist_id = coalesce(artist_id, (select id from artists where slug = 'franki-indrasmoro')),
+  description = coalesce(description, E'Si Pemikir menampilkan lebih dari 150 karya visual Franki Indrasmoro, dari gambar masa kecil hingga karya terbarunya. Judul pameran lahir ketika Franki mengumpulkan karya-karya lamanya dan menyadari bahwa dirinya seorang pemikir: suka memikirkan banyak hal secara kritis, sekaligus kreator yang membangun semesta dari fantasinya.\n\nPameran ini mengajak pengunjung ikut berpikir, menemukan dan mengembangkan potensi diri agar berguna bagi sesama dan alam. Pada hari penutupan, Franki memperdengarkan lagu-lagu dari album debutnya, Revisi Diri.')
+where slug = 'si-pemikir';

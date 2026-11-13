@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db, currentExhibition } from '../../../lib/db';
+import { getExhibition, guestbookOpen } from '../../../lib/catalog';
 import { clean, isEmail, normalizePhone, ROLES, SOURCES } from '../../../lib/util';
 
 export async function POST(req) {
@@ -21,7 +22,11 @@ export async function POST(req) {
   let instagram = clean(body.instagram, 60);
   if (instagram && !instagram.startsWith('@')) instagram = '@' + instagram;
 
-  const ex = await currentExhibition();
+  // Buku tamu per pameran (slug dari halaman); tanpa slug = pameran aktif (EXHIBITION_SLUG).
+  const slug = clean(body.exhibition, 80);
+  const ex = slug ? await getExhibition(slug) : await currentExhibition();
+  if (!ex) return NextResponse.json({ error: 'Pameran tidak ditemukan.' }, { status: 404 });
+  if (slug && !guestbookOpen(ex)) return NextResponse.json({ error: 'Buku tamu pameran ini sudah ditutup.' }, { status: 400 });
   const sb = db();
 
   // Same person already in today's book? Don't count twice.
