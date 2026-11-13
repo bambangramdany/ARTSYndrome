@@ -46,7 +46,7 @@ export async function POST(req) {
     if (!url) return back(req, { err: 'Link berita tidak valid.' });
     const manual = manualFields(form);
     let meta = {}; let warn = '';
-    try { meta = await fetchPressMeta(url); } catch (e) { warn = e.message || 'Data tidak terbaca otomatis.'; }
+    try { meta = await fetchPressMeta(url); } catch (e) { warn = e.message || 'Data tidak terbaca otomatis.'; console.warn('[press] ambil gagal', url, warn); }
     // Isian manual selalu menang atas hasil otomatis.
     const row = { ...meta };
     Object.entries(manual).forEach(([k, v]) => { if (v) row[k] = v; });
@@ -83,9 +83,11 @@ export async function POST(req) {
     try {
       const meta = await fetchPressMeta(data.url);
       const patch = Object.fromEntries(Object.entries(meta).filter(([, v]) => v));
-      await sb.from('press_links').update(patch).eq('id', id);
+      const { error } = await sb.from('press_links').update(patch).eq('id', id);
+      if (error) { console.error('[press] refresh gagal simpan', error); return back(req, { err: 'Gagal menyimpan hasil ambil ulang.' }); }
+      console.info('[press] refresh ok', data.url, '->', patch.title);
       return back(req, { ok: 'Data diambil ulang dari situs.' });
-    } catch (e) { return back(req, { err: e.message || 'Gagal mengambil ulang.' }); }
+    } catch (e) { console.warn('[press] refresh gagal', data.url, e.message); return back(req, { err: e.message || 'Gagal mengambil ulang.' }); }
   }
   if (mode === 'delete') {
     await sb.from('press_links').delete().eq('id', id);

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { PublicShell } from '../../components/Shell';
 import PressImage from '../../components/PressImage';
 import { db, currentExhibition } from '../../lib/db';
+import { decodeAll } from '../../lib/press';
 import { fmtDate, fmtRange } from '../../lib/util';
 
 export const dynamic = 'force-dynamic';
@@ -17,7 +18,7 @@ export default async function PressPage() {
   const { data } = await db().from('press_links').select('id,url,title,outlet,published_on,excerpt,image_url')
     .eq('exhibition_id', ex.id).eq('hidden', false)
     .order('published_on', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false });
-  const rows = data || [];
+  const rows = (data || []).map((r) => ({ ...r, title: decodeAll(r.title), outlet: decodeAll(r.outlet), excerpt: decodeAll(r.excerpt) }));
 
   return (
     <PublicShell exhibition={ex}>

@@ -4,6 +4,7 @@ import ConfirmSubmit from '../../../components/ConfirmSubmit';
 import PressImage from '../../../components/PressImage';
 import { requireAdmin } from '../../../lib/auth';
 import { db, currentExhibition } from '../../../lib/db';
+import { decodeAll } from '../../../lib/press';
 import { fmtDate } from '../../../lib/util';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +15,7 @@ export default async function AdminPress({ searchParams }) {
   const ex = await currentExhibition();
   const { data, error } = await db().from('press_links').select('*').eq('exhibition_id', ex.id)
     .order('published_on', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false });
-  const rows = data || [];
+  const rows = (data || []).map((r) => ({ ...r, title: decodeAll(r.title), outlet: decodeAll(r.outlet), excerpt: decodeAll(r.excerpt) }));
   const notice = typeof searchParams.ok === 'string' ? searchParams.ok : '';
   const err = typeof searchParams.err === 'string' ? searchParams.err : '';
   const prefillUrl = typeof searchParams.url === 'string' ? searchParams.url : '';
