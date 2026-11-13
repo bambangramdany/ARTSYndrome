@@ -16,7 +16,7 @@ export function PublicShell({ children, exhibition }) {
       <main>{children}</main>
       <footer className="foot">
         <div className="wrap">
-          <span>ARTSYndrome · Ruang temu seni visual</span>
+          <span>ARTSYndrome · Ruang temu seni visual · <Link href="/liputan">Liputan media</Link></span>
           <span>© 2026 ARTSYndrome</span>
         </div>
       </footer>
@@ -28,6 +28,7 @@ export function AdminShell({ children, active }) {
   const items = [
     ['/admin', 'Tamu'],
     ['/admin/undangan', 'Undangan'],
+    ['/admin/liputan', 'Liputan'],
     ['/admin/qr', 'QR Buku Tamu']
   ];
   return (

@@ -32,7 +32,8 @@ Desain referensi (6 artboard + catatan) ada di canvas Claude Design "ARTSYndrome
 - `lib/db.js` client Supabase **server-only** pakai service role. Tabel RLS aktif tanpa policy publik → browser tidak pernah akses database langsung; semua lewat route handler.
 - `lib/auth.js` admin login = satu kata sandi (`ADMIN_PASSWORD`) + cookie HMAC (`SESSION_SECRET`), 30 hari.
 - `supabase/schema.sql` tabel `exhibitions`, `invitations`, `guests`. Pameran aktif dipilih lewat env `EXHIBITION_SLUG` (default `si-pemikir`).
-- Rute: `/` buku tamu · `/u/[code]` undangan · `/c/[code]` check-in petugas · `/admin`, `/admin/undangan`, `/admin/qr` · API di `app/api/*`.
+- Rute: `/` buku tamu · `/u/[code]` undangan · `/c/[code]` check-in petugas · `/liputan` liputan media · `/admin`, `/admin/undangan`, `/admin/liputan`, `/admin/qr` · API di `app/api/*`.
+- Liputan media (13 Nov): tim tempel link di `/admin/liputan`; `lib/press.js` ambil metadata Open Graph (judul, media, tanggal, cuplikan ≤240 karakter, gambar) dengan penjaga alamat internal. Situs yang menolak bot (mis. Tempo, 403) diisi manual. Tabel `press_links` (bagian akhir `schema.sql`). Artikel tidak disalin, hanya pratinjau + link.
 - Env: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD`, `SESSION_SECRET`, `NEXT_PUBLIC_SITE_URL`, opsional `EXHIBITION_SLUG`.
 
 ## Aturan bisnis

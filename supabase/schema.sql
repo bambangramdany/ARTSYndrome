@@ -85,3 +85,22 @@ insert into exhibitions (slug, title, artist, venue, address, opening_label, sta
 values ('si-pemikir', 'Si Pemikir', 'Franki Indrasmoro', 'Galeri TOKONOMA', '[ALAMAT GALERI]',
         'Minggu, 15 November 2026, [JAM] WIB', '2026-11-15', '2026-11-22', '[TANGGAL BATAS RSVP]', '[NAMA PIC] · [08xx]')
 on conflict (slug) do nothing;
+
+-- Liputan media: link berita yang ditempel tim di /admin/liputan, tampil di /liputan.
+-- Hanya metadata pratinjau (judul, media, tanggal, cuplikan, gambar) yang disimpan; artikel tetap di situs aslinya.
+create table if not exists press_links (
+  id uuid primary key default gen_random_uuid(),
+  exhibition_id uuid not null references exhibitions(id) on delete cascade,
+  url text not null,
+  title text not null,
+  outlet text,                 -- nama media, contoh: 'Kompas.com'
+  published_on date,
+  excerpt text,                -- cuplikan singkat dari deskripsi pratinjau situs
+  image_url text,
+  hidden boolean not null default false,
+  created_at timestamptz not null default now(),
+  unique (exhibition_id, url)
+);
+create index if not exists press_links_exhibition_idx on press_links(exhibition_id);
+alter table press_links enable row level security;
+grant select, insert, update, delete on press_links to service_role;
