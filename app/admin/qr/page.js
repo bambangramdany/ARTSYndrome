@@ -1,6 +1,7 @@
 import QRCode from 'qrcode';
 import { AdminShell } from '../../../components/Shell';
 import PrintButton from '../../../components/PrintButton';
+import PosterDownload from '../../../components/PosterDownload';
 import { requireAdmin } from '../../../lib/auth';
 import { currentExhibition, siteUrl } from '../../../lib/db';
 
@@ -17,8 +18,11 @@ export default async function QrPoster() {
   return (
     <AdminShell active="/admin/qr">
       <div className="noprint admin-head" style={{ alignItems: 'center' }}>
-        <p className="lead" style={{ maxWidth: 640 }}>Cetak poster ini (A4 atau A3) dan pasang di pintu masuk serta meja tamu. Tamu kasual cukup memindai dengan kamera ponsel.</p>
-        <PrintButton />
+        <p className="lead" style={{ maxWidth: 640 }}>Cetak poster ini (A4 atau A3) dan pasang di pintu masuk serta meja tamu. Tamu kasual cukup memindai dengan kamera ponsel. Tidak ada printer? Unduh sebagai gambar A4 (PNG) lalu kirim lewat WhatsApp untuk dicetak di tempat lain.</p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+          <PosterDownload title={ex.title} artist={ex.artist} url={url} slug={ex.slug} />
+          <PrintButton />
+        </div>
       </div>
       <article style={{ maxWidth: 640, margin: '32px auto 0', border: '1px solid #111', padding: '56px 48px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, textAlign: 'center', breakInside: 'avoid' }}>
         <img src="/logo-black.svg" alt="ARTSYndrome" style={{ height: 120, width: 'auto' }} />
