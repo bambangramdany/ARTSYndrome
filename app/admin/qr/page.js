@@ -32,7 +32,7 @@ export default async function QrPoster() {
           <p className="artist">{ex.artist}</p>
         </div>
         <div style={{ width: 320, height: 320 }} role="img" aria-label={`Kode QR ke ${url}`} dangerouslySetInnerHTML={{ __html: svg.replace('<svg', '<svg width="100%" height="100%"') }} />
-        <p style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: '-.01em' }}>Pindai untuk mengisi buku tamu</p>
+        <p style={{ margin: 0, fontSize: 'clamp(17px, 4.4vw, 28px)', fontWeight: 800, lineHeight: 1.15, letterSpacing: '-.01em', textTransform: 'uppercase' }}>Dukung seniman kami<br />dengan mengisi buku tamu</p>
         <p className="mono" style={{ margin: 0, fontSize: 16 }}>{url.replace(/^https?:\/\//, '')}</p>
       </article>
     </AdminShell>

@@ -22,26 +22,32 @@ async function renderPoster({ title, artist, url }) {
   ctx.strokeStyle = INK; ctx.lineWidth = 6; ctx.strokeRect(150, 150, W - 300, H - 300);
 
   const logo = await loadImage('/logo-black.svg');
-  const qr = await QRCode.toCanvas(document.createElement('canvas'), url, { width: 1240, margin: 0, errorCorrectionLevel: 'H', color: { dark: INK, light: '#FFFFFF' } });
+  const qr = await QRCode.toCanvas(document.createElement('canvas'), url, { width: 1180, margin: 0, errorCorrectionLevel: 'H', color: { dark: INK, light: '#FFFFFF' } });
 
   // Judul diperkecil otomatis bila terlalu panjang
   let titleSize = 300;
   ctx.font = `800 ${titleSize}px Archivo, sans-serif`;
   while (ctx.measureText(title).width > W - 520 && titleSize > 120) { titleSize -= 10; ctx.font = `800 ${titleSize}px Archivo, sans-serif`; }
 
-  const logoH = 470, logoW = Math.round(logoH * (614.9 / 276.01));
+  // Ajakan dua baris, huruf kapital; diperkecil bila tidak muat
+  const CTA = ['DUKUNG SENIMAN KAMI', 'DENGAN MENGISI BUKU TAMU'];
+  let ctaSize = 130; const ctaGap = Math.round(ctaSize * 0.18);
+  ctx.font = `800 ${ctaSize}px Archivo, sans-serif`;
+  while (Math.max(...CTA.map((t) => ctx.measureText(t).width)) > W - 520 && ctaSize > 70) { ctaSize -= 4; ctx.font = `800 ${ctaSize}px Archivo, sans-serif`; }
+
+  const logoH = 400, logoW = Math.round(logoH * (614.9 / 276.01));
   const blocks = [
     { h: logoH, draw: (y) => ctx.drawImage(logo, (W - logoW) / 2, y, logoW, logoH) },
-    { gap: 150 },
+    { gap: 120 },
     { h: 64, draw: (y) => text('BUKU TAMU', y + 56, '400 64px "IBM Plex Mono", monospace', '#555555', 12) },
     { gap: 70 },
     { h: titleSize, draw: (y) => text(title, y + titleSize * 0.82, `800 ${titleSize}px Archivo, sans-serif`, INK, -titleSize * 0.03) },
     { gap: 50 },
     { h: 140, draw: (y) => text(artist, y + 112, '500 140px Archivo, sans-serif', INK) },
     { gap: 140 },
-    { h: 1240, draw: (y) => ctx.drawImage(qr, (W - 1240) / 2, y, 1240, 1240) },
-    { gap: 140 },
-    { h: 110, draw: (y) => text('Pindai untuk mengisi buku tamu', y + 90, '700 110px Archivo, sans-serif', INK) },
+    { h: 1180, draw: (y) => ctx.drawImage(qr, (W - 1180) / 2, y, 1180, 1180) },
+    { gap: 130 },
+    { h: ctaSize * 2 + ctaGap, draw: (y) => { text(CTA[0], y + ctaSize * 0.82, `800 ${ctaSize}px Archivo, sans-serif`, INK, -ctaSize * 0.01); text(CTA[1], y + ctaSize + ctaGap + ctaSize * 0.82, `800 ${ctaSize}px Archivo, sans-serif`, INK, -ctaSize * 0.01); } },
     { gap: 60 },
     { h: 72, draw: (y) => text(url.replace(/^https?:\/\//, ''), y + 60, '400 72px "IBM Plex Mono", monospace', INK) }
   ];
