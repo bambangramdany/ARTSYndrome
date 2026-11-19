@@ -36,7 +36,11 @@ export default async function AdminGuests({ searchParams }) {
         </div>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           <Link className="btn-line" href={'/admin' + qs(f)}>Muat ulang</Link>
-          <a className="btn-dark" href={'/api/admin/export' + qs(f)}>
+          <a className="btn-dark" href={'/api/admin/export' + qs(f) + (qs(f) === '?' ? '' : '&') + 'format=xlsx'}>
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
+            Ekspor Excel
+          </a>
+          <a className="btn-line" href={'/api/admin/export' + qs(f)}>
             <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
             Ekspor CSV
           </a>
