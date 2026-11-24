@@ -1,10 +1,10 @@
 import { isAdmin } from '../../../../lib/auth';
 import { db, currentExhibition, allExhibitions } from '../../../../lib/db';
 import { PERIOD_MODES } from '../../../../lib/guests';
-import { loadReport, guestSections, invitationSections } from '../../../../lib/report';
+import { loadReport, reportView, PERIOD_LABEL } from '../../../../lib/report';
+import { buildReportPdf } from '../../../../lib/reportPdf';
 import { buildXlsx } from '../../../../lib/xlsx';
 
-const PERIOD_LABEL = { periode: 'Masa pameran', luar: 'Di luar masa pameran', semua: 'Semua waktu' };
 const csvCell = (v) => {
   let s = v === null || v === undefined ? '' : String(v);
   if (/^[=+\-@]/.test(s)) s = "'" + s;
@@ -19,10 +19,26 @@ export async function GET(req) {
   const w = PERIOD_MODES.includes(url.searchParams.get('w')) ? url.searchParams.get('w') : 'periode';
   const slug = url.searchParams.get('ex') || 'semua';
   const r = await loadReport(db(), { slug, w, allExhibitions, currentExhibition });
-  const scope = r.all ? 'Semua pameran' : r.chosen[0].title;
+  const v = reportView(r, w);
+  const scope = v.scopeTitle;
+  const file = `laporan-${r.all ? 'semua-pameran' : r.chosen[0].slug}${w !== 'periode' ? '-' + w : ''}`;
 
-  const groups = [['Tamu', guestSections(r.guests, { exById: r.exById, multi: r.all && r.chosen.length > 1 })]];
-  if (w !== 'luar') groups.push(['Undangan', invitationSections(r.invites)]);
+  if (url.searchParams.get('format') === 'pdf') {
+    const pdf = await buildReportPdf({
+      scopeTitle: v.scopeTitle, scopeSub: v.scopeSub, periodLabel: v.periodLabel, tiles: v.tiles, footnote: v.footnote,
+      groups: [['Tamu', v.sections], ['Undangan', v.inviteSections, 'Seluruh undangan pada pameran terpilih, tidak disaring waktu isi.']],
+      generatedAt: new Date()
+    });
+    return new Response(pdf, {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="${file}.pdf"`,
+        'Cache-Control': 'no-store'
+      }
+    });
+  }
+
+  const groups = [['Tamu', v.sections], ['Undangan', v.inviteSections]];
   const rows = [];
   for (const [group, sections] of groups) {
     for (const s of sections) {
@@ -30,7 +46,6 @@ export async function GET(req) {
     }
   }
   const headers = ['Cakupan', 'Waktu isi', 'Kelompok', 'Variabel', 'Kategori', 'Jumlah', 'Persen', 'Basis (n)'];
-  const file = `laporan-${r.all ? 'semua-pameran' : r.chosen[0].slug}${w !== 'periode' ? '-' + w : ''}`;
 
   if (url.searchParams.get('format') === 'xlsx') {
     const buf = buildXlsx({ sheetName: 'Laporan', headers, rows, widths: [22, 20, 12, 34, 34, 10, 10, 10] });

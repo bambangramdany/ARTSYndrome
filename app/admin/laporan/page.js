@@ -1,16 +1,13 @@
 import Link from 'next/link';
 import { AdminShell } from '../../../components/Shell';
-import PrintButton from '../../../components/PrintButton';
 import { requireAdmin } from '../../../lib/auth';
 import { db, currentExhibition, allExhibitions } from '../../../lib/db';
-import { fmtRange } from '../../../lib/util';
 import { PERIOD_MODES } from '../../../lib/guests';
-import { loadReport, guestSections, invitationSections, headline, fmtPct } from '../../../lib/report';
+import { loadReport, reportView, fmtPct, PERIOD_LABEL } from '../../../lib/report';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Laporan · ARTSYndrome', robots: { index: false, follow: false } };
 
-const PERIOD_LABEL = { periode: 'Masa pameran', luar: 'Di luar masa pameran', semua: 'Semua waktu' };
 const num = (v, d = 0) => new Intl.NumberFormat('id-ID', { maximumFractionDigits: d }).format(v);
 
 // Grafik batang horizontal satu seri: label, batang, lalu jumlah + persen tertulis.
@@ -50,9 +47,8 @@ export default async function Report({ searchParams }) {
   const w = PERIOD_MODES.includes(searchParams.w) ? searchParams.w : 'periode';
   const slug = typeof searchParams.ex === 'string' ? searchParams.ex : 'semua';
   const r = await loadReport(db(), { slug, w, allExhibitions, currentExhibition });
-  const h = headline(r.guests, r.chosen);
-  const sections = guestSections(r.guests, { exById: r.exById, multi: r.all && r.chosen.length > 1 });
-  const inviteSections = w === 'luar' ? [] : invitationSections(r.invites);
+  const v = reportView(r, w);
+  const { one, scopeTitle, scopeSub, tiles, footnote, sections, inviteSections } = v;
 
   const href = (over) => {
     const p = { ex: slug, w, ...over };
@@ -60,21 +56,6 @@ export default async function Report({ searchParams }) {
     return '/admin/laporan' + (q ? '?' + q : '');
   };
   const exportHref = (fmt) => '/api/admin/report?' + new URLSearchParams({ ex: slug, w, ...(fmt ? { format: fmt } : {}) }).toString();
-  const one = !r.all ? r.chosen[0] : null;
-  const scopeTitle = one ? one.title : 'Semua pameran';
-  const scopeSub = one
-    ? [one.artist, one.venue, fmtRange(one.starts_on, one.ends_on)].filter(Boolean).join(' · ')
-    : `${r.chosen.length} pameran · ${PERIOD_LABEL[w].toLowerCase()} tiap pameran`;
-
-  const tiles = [
-    ['Total tamu', num(h.total)],
-    ['Rata-rata per hari', num(h.perDay, 1), `${num(h.days)} hari ada tamu`],
-    ['Walk-in', fmtPct(h.walkin)],
-    ['Bersedia diundang', fmtPct(h.consent)],
-    ['Baru mengenal seni', fmtPct(h.newcomers)],
-    ...(r.all && r.chosen.length > 1 ? [['Datang ke >1 pameran', num(h.returning), 'nomor WA yang sama']] : [])
-  ];
-
   return (
     <AdminShell active="/admin/laporan">
       <div className="admin-head">
@@ -89,7 +70,7 @@ export default async function Report({ searchParams }) {
             Ekspor Excel
           </a>
           <a className="btn-line" href={exportHref()}>Ekspor CSV</a>
-          <PrintButton label="Cetak / PDF" />
+          <a className="btn-line" href={exportHref('pdf')}>Unduh PDF</a>
         </div>
       </div>
 
@@ -113,7 +94,7 @@ export default async function Report({ searchParams }) {
         ))}
       </div>
       <p className="small mono" style={{ marginTop: 12 }}>
-        Persen dihitung dari jumlah tamu pada pilihan ini (n). {w === 'periode' && r.outside ? `${num(r.outside)} isian di luar masa pameran tidak ikut dihitung.` : ''}
+        {footnote}
       </p>
 
       <h2 className="h2 rp-group">Tamu</h2>
