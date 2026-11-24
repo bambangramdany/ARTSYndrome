@@ -79,7 +79,11 @@ Selama domain belum aktif, website sudah bisa dipakai di alamat `nama-project.ve
 
 ## Pameran berikutnya
 
-Tambah baris baru di tabel `exhibitions` (slug baru, misalnya `pameran-2`), lalu ubah `EXHIBITION_SLUG` di Vercel ke slug tersebut dan Redeploy. Data pameran lama tetap tersimpan.
+Tambah baris baru di tabel `exhibitions` (slug baru, misalnya `pameran-2`) dengan `starts_on` dan `ends_on`. Selama `EXHIBITION_SLUG` di Vercel kosong, pameran aktif dipilih otomatis dari tanggal (WIB): yang sedang berjalan, lalu yang mulai dalam 7 hari, lalu yang terakhir selesai. QR `/bukutamu` dan halaman admin ikut pindah tanpa deploy ulang dan tanpa cetak ulang QR. Pameran dengan `published = false` tetap punya buku tamu, hanya tidak tampil di daftar publik.
+
+Data pameran lama tetap tersimpan. Di `/admin` ada folder per pameran; secara bawaan hanya isian selama masa pameran yang tampil dan diekspor (data uji sebelum pameran dan isian setelah selesai disembunyikan, bisa dibuka dengan "Tampilkan semua").
+
+Mengisi `EXHIBITION_SLUG` mengunci pameran aktif ke slug itu (perlu Redeploy).
 
 ## Logo
 

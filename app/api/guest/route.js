@@ -22,9 +22,9 @@ export async function POST(req) {
   let instagram = clean(body.instagram, 60);
   if (instagram && !instagram.startsWith('@')) instagram = '@' + instagram;
 
-  // Buku tamu per pameran (slug dari halaman); tanpa slug = pameran aktif (EXHIBITION_SLUG).
+  // Buku tamu per pameran (slug dari halaman); tanpa slug = pameran aktif (lib/db.js).
   const slug = clean(body.exhibition, 80);
-  const ex = slug ? await getExhibition(slug) : await currentExhibition();
+  const ex = slug ? await getExhibition(slug, { includeHidden: true }) : await currentExhibition();
   if (!ex) return NextResponse.json({ error: 'Pameran tidak ditemukan.' }, { status: 404 });
   if (slug && !guestbookOpen(ex)) return NextResponse.json({ error: 'Buku tamu pameran ini sudah ditutup.' }, { status: 400 });
   const sb = db();

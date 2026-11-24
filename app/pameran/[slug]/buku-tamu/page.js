@@ -9,12 +9,15 @@ import { fmtRange } from '../../../../lib/util';
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }) {
-  const ex = await getExhibition(params.slug);
-  return { title: ex ? `Buku tamu ${ex.title} · ARTSYndrome` : 'Buku tamu · ARTSYndrome' };
+  const ex = await getExhibition(params.slug, { includeHidden: true });
+  return {
+    title: ex ? `Buku tamu ${ex.title} · ARTSYndrome` : 'Buku tamu · ARTSYndrome',
+    ...(ex && ex.published === false ? { robots: { index: false, follow: false } } : {})
+  };
 }
 
 export default async function Guestbook({ params }) {
-  const ex = await getExhibition(params.slug);
+  const ex = await getExhibition(params.slug, { includeHidden: true });
   if (!ex) notFound();
   const open = guestbookOpen(ex);
   const name = artistName(ex);
@@ -34,7 +37,7 @@ export default async function Guestbook({ params }) {
             {ex.address ? <div><dt>Alamat</dt><dd style={{ fontWeight: 400 }}>{ex.address}</dd></div> : null}
             {ex.opening_label ? <div><dt>Pembukaan</dt><dd style={{ fontWeight: 400 }}>{ex.opening_label}</dd></div> : null}
           </dl>
-          <p className="small gb-links"><Link href={`/pameran/${ex.slug}`}>Tentang pameran ini</Link> · <Link href="/">Tentang ARTSYndrome</Link></p>
+          <p className="small gb-links">{ex.published !== false ? <><Link href={`/pameran/${ex.slug}`}>Tentang pameran ini</Link> · </> : null}<Link href="/">Tentang ARTSYndrome</Link></p>
         </section>
         <section className="side" aria-label="Buku tamu">
           {open ? (

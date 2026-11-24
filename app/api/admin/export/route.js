@@ -1,7 +1,7 @@
 import { isAdmin } from '../../../../lib/auth';
-import { db, currentExhibition } from '../../../../lib/db';
+import { db, currentExhibition, allExhibitions } from '../../../../lib/db';
 import { displayPhone, fmtTime } from '../../../../lib/util';
-import { GUEST_FILTERS, filterGuests } from '../../../../lib/guests';
+import { GUEST_FILTERS, filterGuests, inPeriod, resolveGuestFolder } from '../../../../lib/guests';
 import { buildXlsx } from '../../../../lib/xlsx';
 
 const fmtFull = (ts) => ts ? new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jakarta', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(ts)) : '';
@@ -19,15 +19,16 @@ export async function GET(req) {
   const url = new URL(req.url);
   const f = GUEST_FILTERS.includes(url.searchParams.get('f')) ? url.searchParams.get('f') : 'Semua';
   const q = (url.searchParams.get('q') || '').slice(0, 80);
-  const ex = await currentExhibition();
+  const { ex, w } = await resolveGuestFolder(url.searchParams, { allExhibitions, currentExhibition });
   const { data } = await db().from('guests').select('*').eq('exhibition_id', ex.id).order('created_at', { ascending: true });
-  const rows = filterGuests(data || [], f, q);
+  const scoped = w === 'semua' ? (data || []) : (data || []).filter((g) => inPeriod(g, ex));
+  const rows = filterGuests(scoped, f, q);
 
   if (url.searchParams.get('format') === 'xlsx') {
     const headers = ['Waktu', 'Nama', 'Jalur', 'Datang sebagai', 'Kota', 'Email', 'WhatsApp', 'Instagram', 'Sumber', 'Izin undangan'];
     const body = rows.map((g) => [fmtFull(g.created_at), g.name, g.path, (g.roles || []).join(', '), g.city, g.email, displayPhone(g.whatsapp), g.instagram, g.source, g.consent ? 'Ya' : 'Tidak']);
     const buf = buildXlsx({ sheetName: `Tamu ${ex.title}`, headers, rows: body, widths: [20, 28, 12, 30, 18, 30, 16, 20, 22, 14] });
-    const suffix = f !== 'Semua' ? '-' + f.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
+    const suffix = (f !== 'Semua' ? '-' + f.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '') + (w === 'semua' ? '-semua' : '');
     return new Response(buf, {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

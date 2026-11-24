@@ -1,18 +1,21 @@
 import Link from 'next/link';
 import { AdminShell } from '../../components/Shell';
 import { requireAdmin } from '../../lib/auth';
-import { db, currentExhibition } from '../../lib/db';
+import { db, currentExhibition, allExhibitions } from '../../lib/db';
 import { displayPhone, fmtRange, fmtTime } from '../../lib/util';
-import { GUEST_FILTERS, filterGuests } from '../../lib/guests';
+import { GUEST_FILTERS, filterGuests, inPeriod, resolveGuestFolder } from '../../lib/guests';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Database tamu · ARTSYndrome', robots: { index: false, follow: false } };
 
 export default async function AdminGuests({ searchParams }) {
   requireAdmin('/admin');
-  const ex = await currentExhibition();
+  const active = await currentExhibition();
+  const { list, ex, w } = await resolveGuestFolder(searchParams, { allExhibitions, currentExhibition: async () => active });
   const { data } = await db().from('guests').select('*').eq('exhibition_id', ex.id).order('created_at', { ascending: false });
-  const all = data || [];
+  const everyone = data || [];
+  const outside = everyone.filter((g) => !inPeriod(g, ex)).length;
+  const all = w === 'semua' ? everyone : everyone.filter((g) => inPeriod(g, ex));
   const f = GUEST_FILTERS.includes(searchParams.f) ? searchParams.f : 'Semua';
   const q = typeof searchParams.q === 'string' ? searchParams.q.slice(0, 80) : '';
   const rows = filterGuests(all, f, q);
@@ -24,7 +27,10 @@ export default async function AdminGuests({ searchParams }) {
     ['Bersedia diundang', all.filter((g) => g.consent).length],
     ['Baru mengenal seni', all.filter((g) => (g.roles || []).includes('Baru mulai mengenal seni')).length]
   ];
-  const qs = (nf) => '?' + new URLSearchParams({ ...(nf !== 'Semua' ? { f: nf } : {}), ...(q ? { q } : {}) }).toString();
+  const base = { ...(ex.slug !== active.slug ? { ex: ex.slug } : {}), ...(w === 'semua' ? { w } : {}) };
+  const qs = (nf, wv = w) => '?' + new URLSearchParams({ ...(base.ex ? { ex: base.ex } : {}), ...(wv === 'semua' ? { w: 'semua' } : {}), ...(nf !== 'Semua' ? { f: nf } : {}), ...(q ? { q } : {}) }).toString();
+  const folderHref = (slug) => '/admin' + (slug === active.slug ? '' : '?' + new URLSearchParams({ ex: slug }).toString());
+  const exportHref = (fmt) => { const p = new URLSearchParams({ ex: ex.slug, ...(w === 'semua' ? { w } : {}), ...(f !== 'Semua' ? { f } : {}), ...(q ? { q } : {}), ...(fmt ? { format: fmt } : {}) }); return '/api/admin/export?' + p.toString(); };
 
   return (
     <AdminShell active="/admin">
@@ -33,19 +39,30 @@ export default async function AdminGuests({ searchParams }) {
           <p className="eyebrow" style={{ fontSize: 12 }}>Database tamu</p>
           <h1 className="h2 admin-title">{ex.title}</h1>
           <p className="lead" style={{ fontSize: 15 }}>{ex.artist} · {ex.venue} · {fmtRange(ex.starts_on, ex.ends_on)}</p>
+          {ex.slug === active.slug ? <p className="small mono">Buku tamu aktif · QR /bukutamu mengarah ke sini</p> : null}
         </div>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           <Link className="btn-line" href={'/admin' + qs(f)}>Muat ulang</Link>
-          <a className="btn-dark" href={'/api/admin/export' + qs(f) + (qs(f) === '?' ? '' : '&') + 'format=xlsx'}>
+          <a className="btn-dark" href={exportHref('xlsx')}>
             <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
             Ekspor Excel
           </a>
-          <a className="btn-line" href={'/api/admin/export' + qs(f)}>
+          <a className="btn-line" href={exportHref()}>
             <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
             Ekspor CSV
           </a>
         </div>
       </div>
+
+      {list.length > 1 ? (
+        <nav aria-label="Folder tamu per pameran" className="toolbar pills-scroll" style={{ marginTop: 24 }}>
+          {list.map((e) => (
+            <Link key={e.id} className="pill" href={folderHref(e.slug)} aria-current={e.slug === ex.slug ? 'true' : undefined}>
+              {e.title}{e.slug === active.slug ? ' · aktif' : ''}
+            </Link>
+          ))}
+        </nav>
+      ) : null}
 
       <div className="tiles">
         {stats.map(([label, n]) => <div key={label}><span>{label}</span><strong>{n}</strong></div>)}
@@ -53,6 +70,8 @@ export default async function AdminGuests({ searchParams }) {
 
       <form className="toolbar" method="get" action="/admin">
         {f !== 'Semua' ? <input type="hidden" name="f" value={f} /> : null}
+        {base.ex ? <input type="hidden" name="ex" value={base.ex} /> : null}
+        {base.w ? <input type="hidden" name="w" value={base.w} /> : null}
         <label htmlFor="q" className="sr">Cari tamu</label>
         <input id="q" name="q" type="search" defaultValue={q} placeholder="Cari nama, email, kota, nomor" className="input" style={{ height: 46, flex: '1 1 200px', fontSize: 15 }} />
         <button type="submit" className="btn-line" style={{ height: 46 }}>Cari</button>
@@ -87,7 +106,12 @@ export default async function AdminGuests({ searchParams }) {
           </tbody>
         </table>
       </div>
-      <p className="small mono" style={{ marginTop: 12 }}>Menampilkan {rows.length} dari {all.length} tamu. Tamu tanpa izin undangan tetap tercatat, tapi jangan dimasukkan ke daftar kirim.</p>
+      <p className="small mono" style={{ marginTop: 12 }}>
+        {w === 'semua'
+          ? <>Termasuk {outside} isian di luar masa pameran (data uji atau setelah selesai). <Link href={'/admin' + qs(f, 'periode')}>Tampilkan masa pameran saja</Link></>
+          : <>Hanya isian selama masa pameran ({fmtRange(ex.starts_on, ex.ends_on)}).{outside ? <> {outside} isian di luar masa pameran disembunyikan. <Link href={'/admin' + qs(f, 'semua')}>Tampilkan semua</Link></> : null}</>}
+      </p>
+      <p className="small mono" style={{ marginTop: 4 }}>Menampilkan {rows.length} dari {all.length} tamu. Tamu tanpa izin undangan tetap tercatat, tapi jangan dimasukkan ke daftar kirim.</p>
     </AdminShell>
   );
 }
