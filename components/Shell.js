@@ -37,6 +37,7 @@ export function PublicShell({ children, active }) {
 export function AdminShell({ children, active }) {
   const items = [
     ['/admin', 'Tamu'],
+    ['/admin/laporan', 'Laporan'],
     ['/admin/undangan', 'Undangan'],
     ['/admin/liputan', 'Liputan'],
     ['/admin/permintaan', 'Permintaan'],
