@@ -3,7 +3,7 @@ import { AdminShell } from '../../components/Shell';
 import { requireAdmin } from '../../lib/auth';
 import { db, currentExhibition, allExhibitions } from '../../lib/db';
 import { displayPhone, fmtRange, fmtTime } from '../../lib/util';
-import { GUEST_FILTERS, filterGuests, inPeriod, resolveGuestFolder } from '../../lib/guests';
+import { GUEST_FILTERS, filterGuests, inPeriod, scopeByPeriod, resolveGuestFolder } from '../../lib/guests';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Database tamu · ARTSYndrome', robots: { index: false, follow: false } };
@@ -15,7 +15,7 @@ export default async function AdminGuests({ searchParams }) {
   const { data } = await db().from('guests').select('*').eq('exhibition_id', ex.id).order('created_at', { ascending: false });
   const everyone = data || [];
   const outside = everyone.filter((g) => !inPeriod(g, ex)).length;
-  const all = w === 'semua' ? everyone : everyone.filter((g) => inPeriod(g, ex));
+  const all = scopeByPeriod(everyone, ex, w);
   const f = GUEST_FILTERS.includes(searchParams.f) ? searchParams.f : 'Semua';
   const q = typeof searchParams.q === 'string' ? searchParams.q.slice(0, 80) : '';
   const rows = filterGuests(all, f, q);
@@ -27,10 +27,10 @@ export default async function AdminGuests({ searchParams }) {
     ['Bersedia diundang', all.filter((g) => g.consent).length],
     ['Baru mengenal seni', all.filter((g) => (g.roles || []).includes('Baru mulai mengenal seni')).length]
   ];
-  const base = { ...(ex.slug !== active.slug ? { ex: ex.slug } : {}), ...(w === 'semua' ? { w } : {}) };
-  const qs = (nf, wv = w) => '?' + new URLSearchParams({ ...(base.ex ? { ex: base.ex } : {}), ...(wv === 'semua' ? { w: 'semua' } : {}), ...(nf !== 'Semua' ? { f: nf } : {}), ...(q ? { q } : {}) }).toString();
+  const base = { ...(ex.slug !== active.slug ? { ex: ex.slug } : {}), ...(w !== 'periode' ? { w } : {}) };
+  const qs = (nf, wv = w) => '?' + new URLSearchParams({ ...(base.ex ? { ex: base.ex } : {}), ...(wv !== 'periode' ? { w: wv } : {}), ...(nf !== 'Semua' ? { f: nf } : {}), ...(q ? { q } : {}) }).toString();
   const folderHref = (slug) => '/admin' + (slug === active.slug ? '' : '?' + new URLSearchParams({ ex: slug }).toString());
-  const exportHref = (fmt) => { const p = new URLSearchParams({ ex: ex.slug, ...(w === 'semua' ? { w } : {}), ...(f !== 'Semua' ? { f } : {}), ...(q ? { q } : {}), ...(fmt ? { format: fmt } : {}) }); return '/api/admin/export?' + p.toString(); };
+  const exportHref = (fmt) => { const p = new URLSearchParams({ ex: ex.slug, ...(w !== 'periode' ? { w } : {}), ...(f !== 'Semua' ? { f } : {}), ...(q ? { q } : {}), ...(fmt ? { format: fmt } : {}) }); return '/api/admin/export?' + p.toString(); };
 
   return (
     <AdminShell active="/admin">
@@ -40,6 +40,7 @@ export default async function AdminGuests({ searchParams }) {
           <h1 className="h2 admin-title">{ex.title}</h1>
           <p className="lead" style={{ fontSize: 15 }}>{ex.artist} · {ex.venue} · {fmtRange(ex.starts_on, ex.ends_on)}</p>
           {ex.slug === active.slug ? <p className="small mono">Buku tamu aktif · QR /bukutamu mengarah ke sini</p> : null}
+          {w === 'luar' ? <p className="small mono">Isian di luar {fmtRange(ex.starts_on, ex.ends_on)}: data uji sebelum pameran dan isian setelah pameran selesai.</p> : null}
         </div>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           <Link className="btn-line" href={'/admin' + qs(f)}>Muat ulang</Link>
@@ -63,6 +64,16 @@ export default async function AdminGuests({ searchParams }) {
           ))}
         </nav>
       ) : null}
+
+      <nav aria-label="Waktu isi buku tamu" className="toolbar pills-scroll" style={{ marginTop: 24 }}>
+        {[
+          ['periode', `Masa pameran · ${everyone.length - outside}`],
+          ['luar', `Di luar masa pameran · ${outside}`],
+          ['semua', `Semua waktu · ${everyone.length}`]
+        ].map(([mode, label]) => (
+          <Link key={mode} className="pill" href={'/admin' + qs(f, mode)} aria-current={mode === w ? 'true' : undefined}>{label}</Link>
+        ))}
+      </nav>
 
       <div className="tiles">
         {stats.map(([label, n]) => <div key={label}><span>{label}</span><strong>{n}</strong></div>)}
@@ -106,12 +117,7 @@ export default async function AdminGuests({ searchParams }) {
           </tbody>
         </table>
       </div>
-      <p className="small mono" style={{ marginTop: 12 }}>
-        {w === 'semua'
-          ? <>Termasuk {outside} isian di luar masa pameran (data uji atau setelah selesai). <Link href={'/admin' + qs(f, 'periode')}>Tampilkan masa pameran saja</Link></>
-          : <>Hanya isian selama masa pameran ({fmtRange(ex.starts_on, ex.ends_on)}).{outside ? <> {outside} isian di luar masa pameran disembunyikan. <Link href={'/admin' + qs(f, 'semua')}>Tampilkan semua</Link></> : null}</>}
-      </p>
-      <p className="small mono" style={{ marginTop: 4 }}>Menampilkan {rows.length} dari {all.length} tamu. Tamu tanpa izin undangan tetap tercatat, tapi jangan dimasukkan ke daftar kirim.</p>
+      <p className="small mono" style={{ marginTop: 12 }}>Menampilkan {rows.length} dari {all.length} tamu. Tamu tanpa izin undangan tetap tercatat, tapi jangan dimasukkan ke daftar kirim.</p>
     </AdminShell>
   );
 }
