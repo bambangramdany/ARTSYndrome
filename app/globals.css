@@ -264,6 +264,16 @@ td { padding: 14px 16px; border-top: 1px solid var(--line); vertical-align: top;
   .press-admin-body .actions a, .press-admin-body .actions button { min-height: 44px; flex: 1 1 auto; justify-content: center; }
 }
 
+/* Isian kota dengan saran kabupaten/kota (components/CityInput.js). */
+.combo { position: relative; display: flex; flex-direction: column; gap: 6px; }
+.combo-list { position: absolute; top: 52px; left: 0; right: 0; z-index: 20; margin: 0; padding: 0; list-style: none; background: #fff; border: 1px solid var(--ink); border-top: 0; max-height: 320px; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+.combo-list[hidden] { display: none; }
+.combo-opt { min-height: 48px; padding: 8px 16px; display: flex; flex-direction: column; justify-content: center; gap: 2px; cursor: pointer; font-size: 16px; border-top: 1px solid var(--line); }
+.combo-opt:first-child { border-top: 0; }
+.combo-opt[aria-selected="true"], .combo-opt:hover { background: var(--plate); }
+.combo-prov { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.combo-hint { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.4; }
+
 /* Laporan (/admin/laporan): grafik batang horizontal satu seri, angka selalu tertulis. */
 .rp-group { margin-top: 48px; font-size: 28px; }
 .rp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 16px; margin-top: 16px; align-items: start; }

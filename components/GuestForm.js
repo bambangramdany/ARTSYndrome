@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ROLES, SOURCES } from '../lib/util';
+import CityInput from './CityInput';
 
 const empty = { name: '', email: '', whatsapp: '', city: '', instagram: '', source: '', consent: false, website: '' };
 
@@ -88,7 +89,7 @@ export default function GuestForm({ instagram, privacyContact, title, exhibition
       <div className="row2">
         <div className="field">
           <label htmlFor="kota">Kota domisili</label>
-          <input id="kota" className="input" autoComplete="address-level2" value={f.city} onChange={set('city')} maxLength={80} />
+          <CityInput id="kota" value={f.city} onChange={(city) => setF((prev) => ({ ...prev, city }))} />
         </div>
         <div className="field">
           <label htmlFor="ig">Instagram</label>
